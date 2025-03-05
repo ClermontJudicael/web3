@@ -2,9 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const eventRoutes = require('./routes/eventRoutes');
+const authRoutes = require('./authRoutes'); // ✅ Import authentication routes
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
@@ -12,36 +13,40 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Middleware de logging
+// Logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 
-// Routes
+// authentication routes
+app.use('/api/auth', authRoutes);
+
+// Add event routes
 app.use('/api/events', eventRoutes);
 
-// Route de test
+// Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
-// Gestion des erreurs
+// Error handling
 app.use((err, req, res, next) => {
-  console.error('Erreur serveur:', err);
+  console.error('Server error:', err);
   res.status(500).json({ 
-    message: err.message || 'Une erreur est survenue!',
+    message: err.message || 'An error occurred!',
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
-// Gestion des routes non trouvées
+// Handle 404 errors
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route non trouvée' });
+  res.status(404).json({ message: 'Route not found' });
 });
 
+// Start the server
 app.listen(port, () => {
-  console.log(`Serveur démarré sur le port ${port}`);
-  console.log('URL de l\'API:', `http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
+  console.log('API URL:', `http://localhost:${port}`);
   console.log('CORS origin:', process.env.CORS_ORIGIN || 'http://localhost:3000');
 });
