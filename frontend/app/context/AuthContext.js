@@ -1,22 +1,30 @@
 "use client";
+
 import { createContext, useContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode"; // ✅ Import jwtDecode
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Check if user is logged in when the app loads
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      setUser({ loggedIn: true }); // You can decode token for more details
+      try {
+        const decodedUser = jwtDecode(token); // ✅ Decode token to get user details
+        setUser(decodedUser);
+      } catch (error) {
+        console.error("Invalid token:", error);
+        localStorage.removeItem("token");
+      }
     }
   }, []);
 
   const login = (token) => {
     localStorage.setItem("token", token);
-    setUser({ loggedIn: true });
+    const decodedUser = jwtDecode(token);
+    setUser(decodedUser);
   };
 
   const logout = () => {
